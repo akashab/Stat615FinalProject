@@ -1,14 +1,14 @@
 ---
 title: "Final Project"
-author: "Akash Agrawal Bejarano"
-date: "1/17/2023"
+author: "Akash Agrawal Bejarano & Johnson Odejide"
+date: "05/06/2023"
 output:
   html_document:
     df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, include = T, warning = F, message = F)
 ```
 
 
@@ -68,14 +68,14 @@ fullmodel <- lm(charges ~ ., data = dataset)
 
 ```{r}
 
-df <- data.frame(dataset_quantitative[, c("age", "bmi", "children", "charges")])
+df <- data.frame(dataset_quantitative[, c("charges", "age", "bmi", "children")])
 
 datarows <- nrow(df)
 
-y_mat <- as.matrix(df)[, 4]
-x1 <- df[, 1]
-x2 <- df[, 2]
-x3 <- df[, 3]
+y_mat <- as.matrix(df)[, 1]
+x1 <- df[, 2]
+x2 <- df[, 3]
+x3 <- df[, 4]
 
 Ym <- matrix(y_mat, ncol = 1, byrow = T)
 
@@ -89,7 +89,7 @@ for(i in seq(1:datarows)){
 df <- data_frame(y_int, x1, x2, x3)
 
 
-Xm <- cbind(rep(1, datarows), as.matrix(df[, 1]), as.matrix(df[, 2]), as.matrix(df[, 3]))
+Xm <- cbind(rep(1, datarows), as.matrix(df[, 2]), as.matrix(df[, 3]), as.matrix(df[, 4]))
 
 
 # Lets find the transpose of matrix Xm
@@ -135,12 +135,17 @@ bmi_lower <- 332.08 - 1.961744 * 51.31
 conf.95 <- qt(p=.025, df=1334, lower.tail = FALSE)
 
 
-conf.int.age <- cbind("Lower" = age_lower, "Upper" = age_upper)
-conf.int.bmi <- cbind("Lower" = bmi_lower, "Upper" = bmi_upper)
+conf.int.age <- cbind("Lower CI (Age)" = age_lower, "Upper CI (Age)" = age_upper)
+conf.int.bmi <- cbind("Lower CI (BMI)" = bmi_lower, "Upper CI (BMI)" = bmi_upper)
 
-rbind("conf.int.age" = conf.int.age,
-      conf.int.bmi = conf.int.bmi)
 ```
+```{r}
+conf.int.age
+```
+```{r}
+conf.int.bmi
+```
+
 
 
 ## 7
@@ -152,6 +157,11 @@ reducedmodel <- lm(charges ~ age + bmi + children + smoker, data = dataset)
 summary(reducedmodel)
 summary(fullmodel)
 ```
+```{r}
+anova(reducedmodel, fullmodel)
+```
+
+The anova test is not significant at the 0.05 level. Hence, we will use the reduced model.
 
 ## 8
 
@@ -168,13 +178,26 @@ summary(tree.model)
 plot(tree.model)
 text(tree.model, pretty = 0)
 ```
-We have used the regression tree here.
+We have used the **regression tree** here.
 
-The regression finds which of the independent variables divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better.
+The regression finds which of the independent variables (in this case - smoker, bmi, age) divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better. For instance, we see that the variable `smoker` is divided into two - those who smoke and those who do not. It then further uses the variable `age` to divide up those who do not smoke into two - those who are less than 43 years and those who are more etc.
+
+To determine the number of splittings to do, we use a parameter called **mindev**. The lower the mindev the more the trees grow. If we change the mindev to something larger than we used here, it will make the tree smaller than this.
+
 
 ## 9
 
+**4 - 5 sentences**
 
+The regression tree clearly revealed that those who smoke pay more on healthcare than those who do not smoke. Furthermore, if they have a BMI that is greater than 30.01 and are older than 41 years old, they spend the most on healthcare. From the tree, we also see that those who do not smoke but are over 51 years old tend to spend more on healthcare than those who are younger than 51 years and this is true because the body gets weaker and the immune systems too get weaker.
+
+Interpretations:
+
+**children**
+
+**smoker**
+
+A smoker spends much more on healthcare expenses. 
 
 
 
