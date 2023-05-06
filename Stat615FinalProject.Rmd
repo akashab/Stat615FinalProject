@@ -1,0 +1,74 @@
+---
+title: "Final Project"
+author: "Akash Agrawal Bejarano"
+date: "1/17/2023"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 1 
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+dataset <- read.csv("expenses.csv")
+
+```
+
+
+The dataset contains information regarding healthcare expenses with a total of 1338 observations. It has a total of 7 variables, 4 quantitative and 3 being categorical. The quantitative variables are Age, BMI (body mass index), children (how many children do you have), charges (cost). The categorical variables are Sex, Smoker, and Region. 
+
+## 2
+
+```{r}
+
+```
+
+
+## 3 
+
+```{r}
+fullmodel <- lm(charges ~ ., data = dataset)
+
+```
+
+## 4
+
+## 5
+```{r}
+summary(fullmodel)
+```
+
+Adjusted R^2 value = 0.7494 
+
+From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
