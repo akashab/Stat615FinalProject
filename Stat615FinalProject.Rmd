@@ -48,7 +48,17 @@ summary(fullmodel)
 
 Adjusted R^2 value = 0.7494 
 
-From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. 
+From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. while sexmale, region northwest are insignificant at the 0.05 significance level. 
+
+## 7
+
+Since sex and region both contained an insignificant effect on charges, we choose to remove these from the reduced model so that we only use significant predictors. 
+
+```{r}
+reducedmodel <- lm(charges ~ age + bmi + children + smoker, data = dataset)
+summary(reducedmodel)
+summary(fullmodel)
+```
 
 
 
