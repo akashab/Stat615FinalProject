@@ -20,6 +20,10 @@ library(dplyr)
 library(ggplot2)
 dataset <- read.csv("expenses.csv")
 
+dataset <- dataset %>% 
+  mutate(sex = as.factor(sex),
+         smoker = as.factor(smoker),
+         region = as.factor(region))
 ```
 
 
@@ -28,7 +32,29 @@ The dataset contains information regarding healthcare expenses with a total of 1
 ## 2
 
 ```{r}
+library(corrplot)
 
+dataset %>% 
+  keep(is.numeric) -> dataset_quantitative
+
+  cor(dataset_quantitative) -> dataset.cor
+  corrplot.mixed(dataset.cor, upper = 'pie',lower='number')
+  
+qqnorm(dataset$age)
+qqline(dataset$age)
+
+qqnorm(dataset$bmi)
+qqline(dataset$bmi)
+
+qqnorm(dataset$children)
+qqline(dataset$children)
+
+qqnorm(dataset$charges)
+qqline(dataset$charges)
+
+levels(dataset$sex)
+levels(dataset$smoker)
+levels(dataset$region)
 ```
 
 
@@ -36,10 +62,49 @@ The dataset contains information regarding healthcare expenses with a total of 1
 
 ```{r}
 fullmodel <- lm(charges ~ ., data = dataset)
-
 ```
 
 ## 4
+
+```{r}
+
+df <- data.frame(dataset_quantitative[, c("age", "bmi", "children", "charges")])
+
+datarows <- nrow(df)
+
+y_mat <- as.matrix(df)[, 4]
+x1 <- df[, 1]
+x2 <- df[, 2]
+x3 <- df[, 3]
+
+Ym <- matrix(y_mat, ncol = 1, byrow = T)
+
+
+y_int <- data.frame(matrix(nrow = datarows, ncol = 1))
+
+for(i in seq(1:datarows)){
+  y_int[i, 1] = 1
+}
+
+df <- data_frame(y_int, x1, x2, x3)
+
+
+Xm <- cbind(rep(1, datarows), as.matrix(df[, 1]), as.matrix(df[, 2]), as.matrix(df[, 3]))
+
+
+# Lets find the transpose of matrix Xm
+t(Xm) -> transposeXm
+
+# The product of Xm and the transpose of Xm
+  transposeXm%*%Xm-> ProDuct1
+
+# Inverse of the matrix * transpose * Y
+solve(ProDuct1)%*%transposeXm%*%Ym
+  
+
+# Calculate the intercept and slope  
+solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
+```
 
 ## 5
 ```{r}
@@ -49,6 +114,34 @@ summary(fullmodel)
 Adjusted R^2 value = 0.7494 
 
 From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. while sexmale, region northwest are insignificant at the 0.05 significance level. 
+
+## 6
+
+```{r}
+model.fit <- lm(charges ~ ., dataset_quantitative)
+# summary(model.fit)
+
+confint(model.fit)
+
+# -6916.24 + 239.99age + 332.08bmi + 542.85children
+
+age_upper <- 239.99 + 1.961744 * 22.29
+age_lower <- 239.99 - 1.961744 * 22.29
+
+bmi_upper <- 332.08 + 1.961744 * 51.31
+bmi_lower <- 332.08 - 1.961744 * 51.31
+
+# d.data <- tibble(X, Y)
+conf.95 <- qt(p=.025, df=1334, lower.tail = FALSE)
+
+
+conf.int.age <- cbind("Lower" = age_lower, "Upper" = age_upper)
+conf.int.bmi <- cbind("Lower" = bmi_lower, "Upper" = bmi_upper)
+
+rbind("conf.int.age" = conf.int.age,
+      conf.int.bmi = conf.int.bmi)
+```
+
 
 ## 7
 
@@ -60,9 +153,26 @@ summary(reducedmodel)
 summary(fullmodel)
 ```
 
+## 8
 
+```{r}
+library(tree)
 
+tree.model <- tree(charges ~ ., dataset,
+                   mindev = 0.005)
 
+tree.model
+
+summary(tree.model)
+
+plot(tree.model)
+text(tree.model, pretty = 0)
+```
+We have used the regression tree here.
+
+The regression finds which of the independent variables divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better.
+
+## 9
 
 
 
