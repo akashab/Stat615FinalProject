@@ -24,6 +24,8 @@ dataset <- dataset %>%
   mutate(sex = as.factor(sex),
          smoker = as.factor(smoker),
          region = as.factor(region))
+
+dataset1 <- read.csv("twitchdata-update.csv")
 ```
 
 
@@ -105,6 +107,86 @@ solve(ProDuct1)%*%transposeXm%*%Ym
 # Calculate the intercept and slope  
 solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
 ```
+
+```{r}
+glimpse(dataset1)
+```
+
+-----------
+
+```{r}
+
+dataset_quantitative1$Watch.time.Minutes.[26] 
+
+
+Ym <- matrix(dataset_quantitative1$Views.gained, ncol = 1, byrow = TRUE)
+  #Ym
+X <- c()
+for(i in 1:length(dataset_quantitative1)){
+  X <- append(X, 1)
+  X <- append(X, dataset_quantitative1$Watch.time.Minutes.[i])
+  X <- append(X, dataset_quantitative1$Followers[i])
+    X <- append(X, dataset_quantitative1$Peak.viewers[i])
+  X <- append(X, dataset_quantitative1$Average.viewers[i])
+  
+}
+
+
+Xm <- matrix(X, ncol = 5, byrow = TRUE)
+
+solve(t(Xm)%*% Xm)
+
+
+interceptslope <- solve(t(Xm)%*% Xm)%*%t(Xm)%*%Ym
+interceptslope
+```
+
+```{r}
+dataset1 %>% 
+  keep(is.numeric) -> dataset_quantitative1
+
+df <- data.frame(dataset_quantitative1[, c("Watch.time.Minutes.", "Stream.time.minutes.", "Peak.viewers", "Average.viewers", "Followers", "Followers.gained", "Views.gained")])
+
+datarows <- nrow(df)
+
+y_mat <- as.matrix(df)[, 7]
+x1 <- df[, 1]
+x2 <- df[, 2]
+x3 <- df[, 3]
+x4 <- df[, 4]
+x5 <- df[, 5]
+x6 <- df[, 6]
+
+
+Ym <- matrix(y_mat, ncol = 1, byrow = T)
+
+
+y_int <- data.frame(matrix(nrow = datarows, ncol = 1))
+
+for(i in seq(1:datarows)){
+  y_int[i, 1] = 1
+}
+
+df <- data_frame(y_int, x1, x2, x3, x4, x5, x6)
+
+
+Xm <- cbind(rep(1, datarows), as.matrix(df[, 1]), as.matrix(df[, 2]), as.matrix(df[, 3]),as.matrix(df[, 4]), as.matrix(df[, 5]), as.matrix(df[, 6]))
+
+
+# Lets find the transpose of matrix Xm
+t(Xm) -> transposeXm
+
+# The product of Xm and the transpose of Xm
+  transposeXm%*%Xm-> ProDuct1
+
+# Inverse of the matrix * transpose * Y
+solve(ProDuct1)%*%transposeXm%*%Ym
+  
+
+# Calculate the intercept and slope  
+solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
+```
+
 
 ## 5
 ```{r}
