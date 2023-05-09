@@ -24,9 +24,10 @@ dataset <- dataset %>%
          smoker = as.factor(smoker),
          region = as.factor(region))
 
+dataset
 ```
 
-The dataset contains 1338 rows of insured data, where the insurance charges are given against Age, Sex, BMI, Number of Children, Smoker and Region. Within the dataset there are no missing values. There are 4 quantitative variables and 3 categorical. Originally the sex, smoker, and region variables were character classed, however in order to use them for our linear models we transformed them into factor variables so that we can use them in our model with dummy variables. 
+The dataset contains 1338 rows of healthcare insured data, where the insurance charges are given against Age, Sex, BMI, Number of Children, Smoker and Region. Within the dataset there are no missing values. There are 4 quantitative variables and 3 categorical. Originally the sex, smoker, and region variables were character classed, however in order to use them for our linear models we transformed them into factor variables so that we can use them in our model with dummy variables. 
 
 
 ## 2
