@@ -190,6 +190,7 @@ summary(tree.model)
 plot(tree.model)
 text(tree.model, pretty = 0)
 ```
+
 We have used the **regression tree** here.
 
 The regression finds which of the independent variables (in this case - smoker, bmi, age) divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better. For instance, we see that the variable `smoker` is divided into two - those who smoke and those who do not. It then further uses the variable `age` to divide up those who do not smoke into two - those who are less than 43 years and those who are more etc.
@@ -199,8 +200,6 @@ To determine the number of splittings to do, we use a parameter called **mindev*
 The regression tree clearly revealed that those who smoke pay more on healthcare than those who do not smoke. Furthermore, if they have a BMI that is greater than 30.01 and are older than 41 years old, they spend the most on healthcare. From the tree, we also see that those who do not smoke but are over 51 years old tend to spend more on healthcare than those who are younger than 51 years and this is true because the body gets weaker and the immune systems too get weaker.
 
 ## 9
-
-**4 - 5 sentences**
 
 Something we found interesting was that if you have more children you are charged more for medical bills. Initially we thought this was simple as more children means more people you need to pay for, however this is not the case as the charges are based on the specific individual. This means that people who have more children are also spending more on medical bills for themselves specifically and not the family which the analysis helped us highlight. Additionally we can see that a Smoker on average spends a lot more than nonsmokers, specifically $24,000. Both the multiple linear regression model and the regression tree helped highlight these aspects and enhanced our understanding on which factors affect medical expenses the most. 
  
