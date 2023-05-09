@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
-author: "Akash Agrawal Bejarano"
-date: "1/17/2023"
+author: "Akash Agrawal Bejarano & Johnson Odejide"
+date: "05/06/2023"
 output:
   html_document:
     df_print: paged
@@ -19,41 +19,34 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 dataset <- read.csv("expenses.csv")
-
 dataset <- dataset %>% 
   mutate(sex = as.factor(sex),
          smoker = as.factor(smoker),
          region = as.factor(region))
 
-dataset1 <- read.csv("twitchdata-update.csv")
 ```
 
+The dataset contains 1338 rows of insured data, where the insurance charges are given against Age, Sex, BMI, Number of Children, Smoker and Region. Within the dataset there are no missing values. There are 4 quantitative variables and 3 categorical. Originally the sex, smoker, and region variables were character classed, however in order to use them for our linear models we transformed them into factor variables so that we can use them in our model with dummy variables. 
 
-The dataset contains information regarding healthcare expenses with a total of 1338 observations. It has a total of 7 variables, 4 quantitative and 3 being categorical. The quantitative variables are Age, BMI (body mass index), children (how many children do you have), charges (cost). The categorical variables are Sex, Smoker, and Region. 
 
 ## 2
 
 ```{r}
 library(corrplot)
-
 dataset %>% 
   keep(is.numeric) -> dataset_quantitative
-
   cor(dataset_quantitative) -> dataset.cor
-  corrplot.mixed(dataset.cor, upper = 'pie',lower='number')
+  #corrplot.mixed(dataset.cor, upper = 'pie',lower='number')
+  corrplot(dataset.cor, method = "ellipse",)
   
 qqnorm(dataset$age)
 qqline(dataset$age)
-
 qqnorm(dataset$bmi)
 qqline(dataset$bmi)
-
 qqnorm(dataset$children)
 qqline(dataset$children)
-
 qqnorm(dataset$charges)
 qqline(dataset$charges)
-
 levels(dataset$sex)
 levels(dataset$smoker)
 levels(dataset$region)
@@ -64,129 +57,47 @@ levels(dataset$region)
 
 ```{r}
 fullmodel <- lm(charges ~ ., data = dataset)
+fullmodel
 ```
+
+charges = -11938.5 + 256.9(age) -131.3(sexmale) + bmi(bmi) + 475.5(children) + 23848.5(smokeryes) -353.0(regionNW) -1035.0(regionSE) -960.1(regionSW)
 
 ## 4
 
 ```{r}
-
-df <- data.frame(dataset_quantitative[, c("age", "bmi", "children", "charges")])
-
+df <- data.frame(dataset_quantitative[, c("charges", "age", "bmi", "children")])
 datarows <- nrow(df)
-
-y_mat <- as.matrix(df)[, 4]
-x1 <- df[, 1]
-x2 <- df[, 2]
-x3 <- df[, 3]
-
+y_mat <- as.matrix(df)[, 1]
+x1 <- df[, 2]
+x2 <- df[, 3]
+x3 <- df[, 4]
 Ym <- matrix(y_mat, ncol = 1, byrow = T)
-
-
 y_int <- data.frame(matrix(nrow = datarows, ncol = 1))
-
 for(i in seq(1:datarows)){
   y_int[i, 1] = 1
 }
-
 df <- data_frame(y_int, x1, x2, x3)
-
-
-Xm <- cbind(rep(1, datarows), as.matrix(df[, 1]), as.matrix(df[, 2]), as.matrix(df[, 3]))
-
-
+Xm <- cbind(rep(1, datarows), as.matrix(df[, 2]), as.matrix(df[, 3]), as.matrix(df[, 4]))
 # Lets find the transpose of matrix Xm
 t(Xm) -> transposeXm
-
 # The product of Xm and the transpose of Xm
   transposeXm%*%Xm-> ProDuct1
-
 # Inverse of the matrix * transpose * Y
 solve(ProDuct1)%*%transposeXm%*%Ym
   
-
 # Calculate the intercept and slope  
 solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
 ```
 
-```{r}
-glimpse(dataset1)
-```
 
------------
+charges = -6916.2433 + 239.9945(age) + 332.0834(bmi) + 542.8647(children)
 
 ```{r}
 
-dataset_quantitative1$Watch.time.Minutes.[26] 
 
-
-Ym <- matrix(dataset_quantitative1$Views.gained, ncol = 1, byrow = TRUE)
-  #Ym
-X <- c()
-for(i in 1:length(dataset_quantitative1)){
-  X <- append(X, 1)
-  X <- append(X, dataset_quantitative1$Watch.time.Minutes.[i])
-  X <- append(X, dataset_quantitative1$Followers[i])
-    X <- append(X, dataset_quantitative1$Peak.viewers[i])
-  X <- append(X, dataset_quantitative1$Average.viewers[i])
-  
-}
-
-
-Xm <- matrix(X, ncol = 5, byrow = TRUE)
-
-solve(t(Xm)%*% Xm)
-
-
-interceptslope <- solve(t(Xm)%*% Xm)%*%t(Xm)%*%Ym
-interceptslope
+df <- data.frame("Fitted Values" =Xm %*% interceptandslope, "Residuals" =  Ym -  Xm %*% interceptandslope)
+df
 ```
-
-```{r}
-dataset1 %>% 
-  keep(is.numeric) -> dataset_quantitative1
-
-df <- data.frame(dataset_quantitative1[, c("Watch.time.Minutes.", "Stream.time.minutes.", "Peak.viewers", "Average.viewers", "Followers", "Followers.gained", "Views.gained")])
-
-datarows <- nrow(df)
-
-y_mat <- as.matrix(df)[, 7]
-x1 <- df[, 1]
-x2 <- df[, 2]
-x3 <- df[, 3]
-x4 <- df[, 4]
-x5 <- df[, 5]
-x6 <- df[, 6]
-
-
-Ym <- matrix(y_mat, ncol = 1, byrow = T)
-
-
-y_int <- data.frame(matrix(nrow = datarows, ncol = 1))
-
-for(i in seq(1:datarows)){
-  y_int[i, 1] = 1
-}
-
-df <- data_frame(y_int, x1, x2, x3, x4, x5, x6)
-
-
-Xm <- cbind(rep(1, datarows), as.matrix(df[, 1]), as.matrix(df[, 2]), as.matrix(df[, 3]),as.matrix(df[, 4]), as.matrix(df[, 5]), as.matrix(df[, 6]))
-
-
-# Lets find the transpose of matrix Xm
-t(Xm) -> transposeXm
-
-# The product of Xm and the transpose of Xm
-  transposeXm%*%Xm-> ProDuct1
-
-# Inverse of the matrix * transpose * Y
-solve(ProDuct1)%*%transposeXm%*%Ym
-  
-
-# Calculate the intercept and slope  
-solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
-```
-
 
 ## 5
 ```{r}
@@ -195,68 +106,104 @@ summary(fullmodel)
 
 Adjusted R^2 value = 0.7494 
 
-From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. while sexmale, region northwest are insignificant at the 0.05 significance level. 
+From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. Region southwest is close to being insignificant.
+
+While sexmale, region northwest are insignificant at the 0.05 significance level. 
+
+The full models residual standard error is 6062 and in general the model is also significant as the pvalue for the entire model is below the 0.05 significance level. 
 
 ## 6
 
 ```{r}
 model.fit <- lm(charges ~ ., dataset_quantitative)
 # summary(model.fit)
-
 confint(model.fit)
-
 # -6916.24 + 239.99age + 332.08bmi + 542.85children
-
 age_upper <- 239.99 + 1.961744 * 22.29
 age_lower <- 239.99 - 1.961744 * 22.29
-
 bmi_upper <- 332.08 + 1.961744 * 51.31
 bmi_lower <- 332.08 - 1.961744 * 51.31
-
 # d.data <- tibble(X, Y)
 conf.95 <- qt(p=.025, df=1334, lower.tail = FALSE)
+conf.int.age <- cbind("Lower CI (Age)" = age_lower, "Upper CI (Age)" = age_upper)
+conf.int.bmi <- cbind("Lower CI (BMI)" = bmi_lower, "Upper CI (BMI)" = bmi_upper)
 
 
-conf.int.age <- cbind("Lower" = age_lower, "Upper" = age_upper)
-conf.int.bmi <- cbind("Lower" = bmi_lower, "Upper" = bmi_upper)
-
-rbind("conf.int.age" = conf.int.age,
-      conf.int.bmi = conf.int.bmi)
+```
+```{r}
+conf.int.age
+```
+```{r}
+conf.int.bmi
 ```
 
 
 ## 7
 
-Since sex and region both contained an insignificant effect on charges, we choose to remove these from the reduced model so that we only use significant predictors. 
+```{r}
+intercept_only <- lm(charges ~ 1, data=dataset)
+
+#define model with all predictors
+all <- lm(charges ~ ., data=dataset)
+
+#perform forward stepwise regression
+forward <- step(intercept_only, direction='forward', scope=formula(all), trace=0)
+forward
+
+#view results of forward stepwise regression
+forward$anova
+```
+
+From the above stepwise output to get the best model, we can see that the model chosen was one that omitted the sex predictor as it was insignificant. While region was still included in the model, we chose to omit this predictor as well from our reduced model as looking at the summary table in section 5, the regions were either marginally significant, or were insignificant for the northwest region. 
+
+For these reasons we chose to remove region and sex from the reduced model so that we would only have the significant variables to predict charges.  
 
 ```{r}
 reducedmodel <- lm(charges ~ age + bmi + children + smoker, data = dataset)
 summary(reducedmodel)
 summary(fullmodel)
 ```
+```{r}
+anova(reducedmodel, fullmodel)
+```
+
+From the summary output we can see that both models are very close in their Multiple R^2 (reduced = 0.7497, full = 0.7509) and Adjusted R^2 values (reduced = 0.7489, full = 0.7494). Furthermore after running the anova on both models we can see that the anova test is not significant at the 0.05 significance level, and thus we choose the simpler/reduced model which only contains significant predictors. 
+
+Looking at our reduced model we can also interpret the predictors:
+
+On average holding all else constant, for each year you get older, the charges (individual medical costs charged by the health insurance) increases  by $257.85. 
+
+On average holding all else constant, for each additional child you have, the charges (individual medical costs charged by the health insurance) increases  by $473.50. 
+
+On average holding all else constant, for each additional unit of BMI, the charges (individual medical costs charged by the health insurance) increases  by $321.85. 
+
+On average holding all else constant, when you are a smoker you are charged (individual medical costs charged by the health insurance) $23811.40 more than if you were a non-smoker. 
 
 ## 8
 
 ```{r}
 library(tree)
-
 tree.model <- tree(charges ~ ., dataset,
                    mindev = 0.005)
-
 tree.model
-
 summary(tree.model)
-
 plot(tree.model)
 text(tree.model, pretty = 0)
 ```
-We have used the regression tree here.
+We have used the **regression tree** here.
 
-The regression finds which of the independent variables divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better.
+The regression finds which of the independent variables (in this case - smoker, bmi, age) divides the observations more accurately into two portions, and at which value of that variable, and then assigns a predicted value for each of the two portions equal to their respective response value mean. It then takes each of the two portions and further subdivides them, either with the same variable or the other variable, whichever separates the portion better. For instance, we see that the variable `smoker` is divided into two - those who smoke and those who do not. It then further uses the variable `age` to divide up those who do not smoke into two - those who are less than 43 years and those who are more etc.
+
+To determine the number of splittings to do, we use a parameter called **mindev**. The lower the mindev the more the trees grow. If we change the mindev to something larger than we used here, it will make the tree smaller than this.
+
+The regression tree clearly revealed that those who smoke pay more on healthcare than those who do not smoke. Furthermore, if they have a BMI that is greater than 30.01 and are older than 41 years old, they spend the most on healthcare. From the tree, we also see that those who do not smoke but are over 51 years old tend to spend more on healthcare than those who are younger than 51 years and this is true because the body gets weaker and the immune systems too get weaker.
 
 ## 9
 
+**4 - 5 sentences**
 
+Something we found interesting was that if you have more children you are charged more for medical bills. Initially we thought this was simple as more children means more people you need to pay for, however this is not the case as the charges are based on the specific individual. This means that people who have more children are also spending more on medical bills for themselves specifically and not the family which the analysis helped us highlight. Additionally we can see that a Smoker on average spends a lot more than nonsmokers, specifically $24,000. Both the multiple linear regression model and the regression tree helped highlight these aspects and enhanced our understanding on which factors affect medical expenses the most. 
+ 
 
 
 
