@@ -8,11 +8,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, include = T, warning = F, message = F)
 ```
 
 
 ## 1 
+
+### Dataset Inspection
 
 ```{r}
 library(tidyverse)
@@ -27,35 +29,56 @@ dataset <- dataset %>%
 dataset
 ```
 
-The dataset contains 1338 rows of healthcare insured data, where the insurance charges are given against Age, Sex, BMI, Number of Children, Smoker and Region. Within the dataset there are no missing values. There are 4 quantitative variables and 3 categorical. Originally the sex, smoker, and region variables were character classed, however in order to use them for our linear models we transformed them into factor variables so that we can use them in our model with dummy variables. 
+The dataset contains **1338** rows and **7** variables of health insured data, where the insurance **charges** are given against **Age**, **Sex**, **BMI**, **Number of Children**, **Smoker** and **Region** Within the dataset there are no missing values. There are **four (4) quantitative variables** and **three (3) categorical**. Originally the **sex, smoker, and region** variables were character classed, however in order to use them for our linear models we transformed them into factor variables so that we can use them in our model with dummy variables. 
 
 
 ## 2
+
+### Collinearity
 
 ```{r}
 library(corrplot)
 dataset %>% 
   keep(is.numeric) -> dataset_quantitative
   cor(dataset_quantitative) -> dataset.cor
-  #corrplot.mixed(dataset.cor, upper = 'pie',lower='number')
+  
+  dataset.cor
+  # corrplot.mixed(dataset.cor, upper = 'ellipse',lower='number')
   corrplot(dataset.cor, method = "ellipse",)
   
-qqnorm(dataset$age)
+qqnorm(dataset$age,
+       main = "QQ Plot - Age")
 qqline(dataset$age)
-qqnorm(dataset$bmi)
+qqnorm(dataset$bmi,
+       main = "QQ Plot - BMI")
 qqline(dataset$bmi)
-qqnorm(dataset$children)
+qqnorm(dataset$children,
+       main = "QQ Plot - Children")
 qqline(dataset$children)
-qqnorm(dataset$charges)
+qqnorm(dataset$charges,
+       main = "QQ Plot - Charges")
 qqline(dataset$charges)
 levels(dataset$sex)
 levels(dataset$smoker)
 levels(dataset$region)
 ```
 
+```{r}
+dataset %>% 
+  select(-charges) %>% 
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot() +
+  geom_histogram(aes(x=value, fill = key), color = "black") +
+  facet_wrap(~ key, scales = "free") +
+  theme_minimal()
+```
+
+
 
 ## 3 
 
+### Full Model
 ```{r}
 fullmodel <- lm(charges ~ ., data = dataset)
 fullmodel
@@ -64,6 +87,8 @@ fullmodel
 charges = -11938.5 + 256.9(age) -131.3(sexmale) + bmi(bmi) + 475.5(children) + 23848.5(smokeryes) -353.0(regionNW) -1035.0(regionSE) -960.1(regionSW)
 
 ## 4
+
+### Matrix method
 
 ```{r}
 df <- data.frame(dataset_quantitative[, c("charges", "age", "bmi", "children")])
@@ -94,26 +119,35 @@ solve(ProDuct1)%*%transposeXm%*%Ym -> interceptandslope
 charges = -6916.2433 + 239.9945(age) + 332.0834(bmi) + 542.8647(children)
 
 ```{r}
-
-
 df <- data.frame("Fitted Values" =Xm %*% interceptandslope, "Residuals" =  Ym -  Xm %*% interceptandslope)
 df
 ```
 
 ## 5
+
+#### Summary of full model
+
 ```{r}
 summary(fullmodel)
 ```
 
 Adjusted R^2 value = 0.7494 
 
+
+**Remarks** 
+
 From the output summary above we can see that Age, BMI, children, smokeryes, region southeast, region southwest are all significant. Region southwest is close to being insignificant.
+
+
+**Significance**
 
 While sexmale, region northwest are insignificant at the 0.05 significance level. 
 
 The full models residual standard error is 6062 and in general the model is also significant as the pvalue for the entire model is below the 0.05 significance level. 
 
 ## 6
+
+### Confidence Interval
 
 ```{r}
 model.fit <- lm(charges ~ ., dataset_quantitative)
@@ -128,12 +162,12 @@ bmi_lower <- 332.08 - 1.961744 * 51.31
 conf.95 <- qt(p=.025, df=1334, lower.tail = FALSE)
 conf.int.age <- cbind("Lower CI (Age)" = age_lower, "Upper CI (Age)" = age_upper)
 conf.int.bmi <- cbind("Lower CI (BMI)" = bmi_lower, "Upper CI (BMI)" = bmi_upper)
-
-
 ```
+
 ```{r}
 conf.int.age
 ```
+
 ```{r}
 conf.int.bmi
 ```
@@ -164,6 +198,10 @@ reducedmodel <- lm(charges ~ age + bmi + children + smoker, data = dataset)
 summary(reducedmodel)
 summary(fullmodel)
 ```
+
+### ANOVA 
+#### Test of Significance
+
 ```{r}
 anova(reducedmodel, fullmodel)
 ```
@@ -181,6 +219,8 @@ On average holding all else constant, for each additional unit of BMI, the charg
 On average holding all else constant, when you are a smoker you are charged (individual medical costs charged by the health insurance) $23811.40 more than if you were a non-smoker. 
 
 ## 8
+
+### Decision Tree
 
 ```{r}
 library(tree)
@@ -201,6 +241,8 @@ To determine the number of splittings to do, we use a parameter called **mindev*
 The regression tree clearly revealed that those who smoke pay more on healthcare than those who do not smoke. Furthermore, if they have a BMI that is greater than 30.01 and are older than 41 years old, they spend the most on healthcare. From the tree, we also see that those who do not smoke but are over 51 years old tend to spend more on healthcare than those who are younger than 51 years and this is true because the body gets weaker and the immune systems too get weaker.
 
 ## 9
+
+### Conclusion
 
 Something we found interesting was that if you have more children you are charged more for medical bills. Initially we thought this was simple as more children means more people you need to pay for, however this is not the case as the charges are based on the specific individual. This means that people who have more children are also spending more on medical bills for themselves specifically and not the family which the analysis helped us highlight. Additionally we can see that a Smoker on average spends a lot more than nonsmokers, specifically $24,000. Both the multiple linear regression model and the regression tree helped highlight these aspects and enhanced our understanding on which factors affect medical expenses the most. 
  
